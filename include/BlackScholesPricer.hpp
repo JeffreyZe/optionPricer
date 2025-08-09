@@ -6,7 +6,12 @@ public:
     BlackScholesPricer(double spot, double rate, double volatility);
 
     double price(const Option& option) const;
+
     double delta(const Option& option) const;
+    double gamma(const Option& option) const;
+    double vega(const Option& option) const;
+    double theta(const Option& option) const;
+    double rho(const Option& option) const;
 
 private:
     double m_spot;

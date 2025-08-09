@@ -15,8 +15,21 @@ int main()
 
     BlackScholesPricer pricer(spot, rate, vol);
 
-    std::cout << "Call Price: " << pricer.price(callOption) << std::endl;
-    std::cout << "Put Price: " << pricer.price(putOption) << std::endl;
+    std::cout << "=== Call Option ===\n";
+    std::cout << "Price: " << pricer.price(callOption) << "\n";
+    std::cout << "Delta: " << pricer.delta(callOption) << "\n";
+    std::cout << "Gamma: " << pricer.gamma(callOption) << "\n";
+    std::cout << "Vega : " << pricer.vega(callOption) << "\n";
+    std::cout << "Theta: " << pricer.theta(callOption) << "\n";
+    std::cout << "Rho  : " << pricer.rho(callOption) << "\n\n";
+
+    std::cout << "=== Put Option ===\n";
+    std::cout << "Price: " << pricer.price(putOption) << "\n";
+    std::cout << "Delta: " << pricer.delta(putOption) << "\n";
+    std::cout << "Gamma: " << pricer.gamma(putOption) << "\n";
+    std::cout << "Vega : " << pricer.vega(putOption) << "\n";
+    std::cout << "Theta: " << pricer.theta(putOption) << "\n";
+    std::cout << "Rho  : " << pricer.rho(putOption) << "\n";
 
     return 0;
 }
