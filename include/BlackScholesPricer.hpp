@@ -1,17 +1,28 @@
 #pragma once
 #include "Option.hpp"
 
-class BlackScholesPricer {
+class BlackScholesPricer
+{
 public:
     BlackScholesPricer(double spot, double rate, double volatility);
 
-    double price(const Option& option) const;
+    double price(const Option &option) const;
 
-    double delta(const Option& option) const;
-    double gamma(const Option& option) const;
-    double vega(const Option& option) const;
-    double theta(const Option& option) const;
-    double rho(const Option& option) const;
+    // Greeks
+    double delta(const Option &option) const;
+    double gamma(const Option &option) const;
+    double vega(const Option &option) const;
+    double theta(const Option &option) const;
+    double rho(const Option &option) const;
+
+    // Implied volatility
+    static double impliedVolatility(const Option &option,
+                                    double spot,
+                                    double rate,
+                                    double marketPrice,
+                                    double initialVol = 0.2,
+                                    double tolerance = 1e-6,
+                                    int maxIterations = 100);
 
 private:
     double m_spot;

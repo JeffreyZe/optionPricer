@@ -31,6 +31,7 @@ find_package(GTest REQUIRED)
 # Test sources
 set(TEST_SOURCES
     tests/test_black_scholes.cpp
+    tests/test_implied_vol.cpp
 )
 
 # Register the test executable with CTest to enable running it via `ctest`
