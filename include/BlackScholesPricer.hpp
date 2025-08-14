@@ -4,7 +4,8 @@
 class BlackScholesPricer
 {
 public:
-    BlackScholesPricer(double spot, double rate, double volatility);
+    BlackScholesPricer(double spot, double rate, double volatility,
+                       double dividendYield = 0.0);
 
     double price(const Option &option) const;
 
@@ -22,10 +23,12 @@ public:
                                     double marketPrice,
                                     double initialVol = 0.2,
                                     double tolerance = 1e-6,
-                                    int maxIterations = 100);
+                                    int maxIterations = 100,
+                                    double divisionYield = 0.0);
 
 private:
     double m_spot;
     double m_rate;
     double m_volatility;
+    double m_dividendYield;
 };

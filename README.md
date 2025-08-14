@@ -3,10 +3,10 @@
 A simple yet extendable C++ option pricing library, starting with the Black–Scholes model.  
 
 ## 🚀 Features
-- European call/put pricing via closed-form Black–Scholes formula
-- Configurable parameters: spot price, strike, maturity, interest rate, volatility
-- Calculation of Greeks: Delta, Gamma, Vega, Theta, Rho
-- Implied Vol calculation using Newton–Raphson
+- European call/put pricing via closed-form Black–Scholes formula, with continuous dividend yield support
+- Configurable parameters: spot price, strike, maturity, interest rate, volatility, dividentYield
+- Calculation of Greeks (divident-aware): Delta, Gamma, Vega, Theta, Rho
+- Implied Vol calculation using Newton–Raphson, with dividend support
 - Modular design (`Option`, `BlackScholesPricer`, `Utils`) for easy extension
 - Unit tests powered by GoogleTest
 

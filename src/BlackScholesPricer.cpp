@@ -3,8 +3,8 @@
 #include <cmath>
 #include <algorithm>
 
-BlackScholesPricer::BlackScholesPricer(double spot, double rate, double volatility)
-    : m_spot(spot), m_rate(rate), m_volatility(volatility) {}
+BlackScholesPricer::BlackScholesPricer(double spot, double rate, double volatility, double dividendYield)
+    : m_spot(spot), m_rate(rate), m_volatility(volatility), m_dividendYield(dividendYield) {}
 
 double BlackScholesPricer::price(const Option &option) const
 {
@@ -14,16 +14,18 @@ double BlackScholesPricer::price(const Option &option) const
 
     double sigmaSqrtT = m_volatility * std::sqrt(T);
 
-    double d1 = (std::log(m_spot / K) + (m_rate + 0.5 * m_volatility * m_volatility) * T) / sigmaSqrtT;
+    double d1 = (std::log(m_spot / K) + (m_rate - m_dividendYield + 0.5 * m_volatility * m_volatility) * T) / sigmaSqrtT;
     double d2 = d1 - sigmaSqrtT;
 
     if (type == OptionType::Call)
     {
-        return m_spot * normalCDF(d1) - K * std::exp(-m_rate * T) * normalCDF(d2);
+        return m_spot * std::exp(-m_dividendYield * T) * normalCDF(d1) -
+               K * std::exp(-m_rate * T) * normalCDF(d2);
     }
     else
     {
-        return K * std::exp(-m_rate * T) * normalCDF(-d2) - m_spot * normalCDF(-d1);
+        return K * std::exp(-m_rate * T) * normalCDF(-d2) -
+               m_spot * std::exp(-m_dividendYield * T) * normalCDF(-d1);
     }
 }
 
@@ -35,15 +37,15 @@ double BlackScholesPricer::delta(const Option &option) const
 
     double sigmaSqrtT = m_volatility * std::sqrt(T);
 
-    double d1 = (std::log(m_spot / K) + (m_rate + 0.5 * m_volatility * m_volatility) * T) / sigmaSqrtT;
+    double d1 = (std::log(m_spot / K) + (m_rate - m_dividendYield + 0.5 * m_volatility * m_volatility) * T) / sigmaSqrtT;
 
     if (type == OptionType::Call)
     {
-        return normalCDF(d1);
+        return std::exp(-m_dividendYield * T) * normalCDF(d1);
     }
     else
     {
-        return normalCDF(d1) - 1.0;
+        return std::exp(-m_dividendYield * T) * (normalCDF(d1) - 1.0);
     }
 }
 
@@ -54,9 +56,9 @@ double BlackScholesPricer::gamma(const Option &option) const
 
     double sigmaSqrtT = m_volatility * std::sqrt(T);
 
-    double d1 = (std::log(m_spot / K) + (m_rate + 0.5 * m_volatility * m_volatility) * T) / sigmaSqrtT;
+    double d1 = (std::log(m_spot / K) + (m_rate - m_dividendYield + 0.5 * m_volatility * m_volatility) * T) / sigmaSqrtT;
 
-    return normalPDF(d1) / (m_spot * sigmaSqrtT);
+    return std::exp(-m_dividendYield * T) * normalPDF(d1) / (m_spot * sigmaSqrtT);
 }
 
 double BlackScholesPricer::vega(const Option &option) const
@@ -66,9 +68,9 @@ double BlackScholesPricer::vega(const Option &option) const
 
     double sigmaSqrtT = m_volatility * std::sqrt(T);
 
-    double d1 = (std::log(m_spot / K) + (m_rate + 0.5 * m_volatility * m_volatility) * T) / sigmaSqrtT;
+    double d1 = (std::log(m_spot / K) + (m_rate - m_dividendYield + 0.5 * m_volatility * m_volatility) * T) / sigmaSqrtT;
 
-    return m_spot * normalPDF(d1) * std::sqrt(T);
+    return m_spot * std::exp(-m_dividendYield * T) * normalPDF(d1) * std::sqrt(T);
 }
 
 double BlackScholesPricer::theta(const Option &option) const
@@ -85,12 +87,12 @@ double BlackScholesPricer::theta(const Option &option) const
     if (type == OptionType::Call)
     {
         // Return theta per year (do not divide by 365)
-        return -m_spot * normalPDF(d1) * m_volatility / (2 * std::sqrt(T)) - m_rate * K * std::exp(-m_rate * T) * normalCDF(d2);
+        return -m_spot * std::exp(-m_dividendYield * T) * normalPDF(d1) * m_volatility / (2 * std::sqrt(T)) - m_rate * K * std::exp(-m_rate * T) * normalCDF(d2) + m_dividendYield * m_spot * std::exp(-m_dividendYield * T) * normalCDF(d1);
     }
     else
     {
         // Return theta per year (do not divide by 365)
-        return -m_spot * normalPDF(d1) * m_volatility / (2 * std::sqrt(T)) + m_rate * K * std::exp(-m_rate * T) * normalCDF(-d2);
+        return -m_spot * std::exp(-m_dividendYield * T) * normalPDF(d1) * m_volatility / (2 * std::sqrt(T)) + m_rate * K * std::exp(-m_rate * T) * normalCDF(-d2) - m_dividendYield * m_spot * std::exp(-m_dividendYield * T) * normalCDF(-d1);
     }
 }
 
@@ -125,7 +127,8 @@ double BlackScholesPricer::impliedVolatility(const Option &option,
                                              double marketPrice,
                                              double initialVol,
                                              double tolerance,
-                                             int maxIterations)
+                                             int maxIterations,
+                                             double divisionYield)
 {
     const double volLower = 1e-8;      // lower bound for volatility
     const double volUpper = 5.0;       // upper bound (should be large enough)
@@ -134,7 +137,7 @@ double BlackScholesPricer::impliedVolatility(const Option &option,
     // Helper to compute model price at a given vol
     auto priceAt = [&](double vol)
     {
-        BlackScholesPricer p(spot, rate, vol);
+        BlackScholesPricer p(spot, rate, vol, divisionYield);
         return p.price(option);
     };
 
